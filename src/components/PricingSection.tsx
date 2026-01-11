@@ -1,4 +1,5 @@
 import { Check, Zap, Video, Users, BarChart3 } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
@@ -10,6 +11,8 @@ const features = [
 ];
 
 const PricingSection = () => {
+  const navigate = useNavigate();
+
   return (
     <section id="pricing" className="py-20 md:py-32 bg-background relative overflow-hidden">
       {/* Background Glow */}
@@ -74,7 +77,7 @@ const PricingSection = () => {
                 </li>
               </ul>
 
-              <Button variant="hero" size="xl" className="w-full">
+              <Button variant="hero" size="xl" className="w-full" onClick={() => navigate('/checkout')}>
                 Começar Agora
               </Button>
               

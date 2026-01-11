@@ -28,6 +28,26 @@ const TrainerProfile = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
+
+  // Subscription & Payments
+  const [subscriptionLoading, setSubscriptionLoading] = useState(true);
+  const [subscription, setSubscription] = useState<{
+    id: string;
+    plan_name: string;
+    status: "active" | "past_due" | "cancelled" | "trialing";
+    price: number;
+    current_period_end?: string | null;
+  } | null>(null);
+  const [payments, setPayments] = useState<{
+    id: string;
+    amount: number;
+    currency: string;
+    paid_at: string | null;
+    status: "succeeded" | "failed" | "pending";
+    method?: string | null;
+    transaction_id?: string | null;
+  }[]>([]);
+
   const [profile, setProfile] = useState<ProfileData>({
     full_name: "",
     avatar_url: null,
@@ -53,8 +73,69 @@ const TrainerProfile = () => {
 
     if (user) {
       fetchProfile();
+      fetchSubscriptionAndPayments();
     }
   }, [user, userRole, authLoading, navigate]);
+
+  const fetchSubscriptionAndPayments = async () => {
+    if (!user) return;
+    setSubscriptionLoading(true);
+
+    const { data: subData, error: subErr } = await supabase
+      .from("subscriptions")
+      .select("*")
+      .eq("user_id", user.id)
+      .maybeSingle();
+
+    if (subErr) {
+      console.error("Error loading subscription", subErr);
+    } else if (subData) {
+      setSubscription(subData as any);
+    }
+
+    const { data: payData, error: payErr } = await supabase
+      .from("payments")
+      .select("*")
+      .eq("user_id", user.id)
+      .order("paid_at", { ascending: false })
+      .limit(20);
+
+    if (payErr) {
+      console.error("Error loading payments", payErr);
+    } else if (payData) {
+      setPayments(payData as any);
+    }
+
+    setSubscriptionLoading(false);
+  };
+
+  const handleCancelSubscription = async () => {
+    if (!subscription) return;
+    setSaving(true);
+
+    const { error } = await supabase
+      .from("subscriptions")
+      .update({ status: "cancelled" })
+      .eq("id", subscription.id);
+
+    setSaving(false);
+
+    if (error) {
+      toast({ variant: "destructive", title: "Erro", description: "Não foi possível cancelar a assinatura" });
+    } else {
+      setSubscription({ ...subscription, status: "cancelled" });
+      toast({ title: "Assinatura cancelada", description: "A assinatura foi cancelada com sucesso" });
+    }
+  };
+
+  const formatCurrency = (val: number) => {
+    return new Intl.NumberFormat("pt-BR", { style: "currency", currency: "BRL" }).format(val);
+  };
+
+  const formatDate = (d: string | null) => {
+    if (!d) return "-";
+    return new Date(d).toLocaleString();
+  };
 
   const fetchProfile = async () => {
     if (!user) return;
@@ -230,12 +311,81 @@ const TrainerProfile = () => {
       <div className="max-w-2xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+          <Button variant="ghost" size="icon" onClick={() => navigate("/") }>
             <ArrowLeft className="w-5 h-5" />
           </Button>
           <div>
             <h1 className="text-2xl font-display font-bold">Meu Perfil</h1>
             <p className="text-muted-foreground">Configure seu perfil de trainer</p>
+          </div>
+        </div>
+
+        {/* Subscription Status */}
+        <div className="mb-6">
+          <div className="bg-card border border-border rounded-2xl p-4 flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold">Assinatura</h3>
+              {subscriptionLoading ? (
+                <p className="text-sm text-muted-foreground mt-1">Carregando...</p>
+              ) : subscription ? (
+                <div className="mt-1 flex flex-col sm:flex-row sm:items-center sm:gap-4">
+                  <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${subscription.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-muted text-muted-foreground'}`}>
+                    {subscription.status === 'active' ? 'Ativa' : subscription.status}
+                  </div>
+                  <div className="text-sm text-muted-foreground mt-1 sm:mt-0">
+                    Plano: <strong>{subscription.plan_name}</strong> — {formatCurrency(subscription.price)}
+                    {subscription.current_period_end && (
+                      <div>Renova em: {formatDate(subscription.current_period_end)}</div>
+                    )}
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground mt-1">Nenhuma assinatura ativa</p>
+              )}
+            </div>
+
+            <div className="flex items-center gap-2">
+              {subscription?.status === 'active' ? (
+                <Button variant="destructive" onClick={handleCancelSubscription} disabled={saving}>Cancelar Assinatura</Button>
+              ) : (
+                <Button onClick={() => navigate('/checkout')}>Ativar Assinatura</Button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Payment History */}
+        <div className="mb-6">
+          <div className="bg-card border border-border rounded-2xl p-4">
+            <h3 className="text-lg font-semibold">Histórico de Pagamentos</h3>
+            {payments.length === 0 ? (
+              <p className="text-sm text-muted-foreground mt-2">Nenhum pagamento encontrado</p>
+            ) : (
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="text-left text-muted-foreground">
+                      <th className="pb-2">Data</th>
+                      <th className="pb-2">Valor</th>
+                      <th className="pb-2">Status</th>
+                      <th className="pb-2">Método</th>
+                      <th className="pb-2">ID</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {payments.map((p) => (
+                      <tr key={p.id} className="border-t border-border">
+                        <td className="py-2">{formatDate(p.paid_at)}</td>
+                        <td className="py-2">{formatCurrency(p.amount)}</td>
+                        <td className="py-2">{p.status}</td>
+                        <td className="py-2">{p.method || '-'}</td>
+                        <td className="py-2 text-muted-foreground">{p.transaction_id || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
 

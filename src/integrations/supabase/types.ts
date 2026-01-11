@@ -107,6 +107,81 @@ export type Database = {
           },
         ]
       }
+      subscriptions: {
+        Row: {
+          id: string
+          user_id: string
+          plan_name: string
+          status: Database["public"]["Enums"]["subscription_status"]
+          price: number
+          current_period_start: string | null
+          current_period_end: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          plan_name: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          price: number
+          current_period_start?: string | null
+          current_period_end?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          plan_name?: string
+          status?: Database["public"]["Enums"]["subscription_status"]
+          price?: number
+          current_period_start?: string | null
+          current_period_end?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      payments: {
+        Row: {
+          id: string
+          subscription_id: string | null
+          user_id: string
+          amount: number
+          currency: string
+          paid_at: string | null
+          status: Database["public"]["Enums"]["payment_status"]
+          method: string | null
+          transaction_id: string | null
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          subscription_id?: string | null
+          user_id: string
+          amount: number
+          currency?: string
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          method?: string | null
+          transaction_id?: string | null
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          subscription_id?: string | null
+          user_id?: string
+          amount?: number
+          currency?: string
+          paid_at?: string | null
+          status?: Database["public"]["Enums"]["payment_status"]
+          method?: string | null
+          transaction_id?: string | null
+          created_at?: string
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
@@ -143,6 +218,8 @@ export type Database = {
     }
     Enums: {
       app_role: "student" | "trainer"
+      subscription_status: "active" | "past_due" | "cancelled" | "trialing"
+      payment_status: "succeeded" | "failed" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -271,6 +348,8 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["student", "trainer"],
+      subscription_status: ["active", "past_due", "cancelled", "trialing"],
+      payment_status: ["succeeded", "failed", "pending"],
     },
   },
 } as const
