@@ -1,59 +1,13 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import TrainerCard from "@/components/TrainerCard";
 import { Button } from "@/components/ui/button";
-import { Filter, ChevronDown } from "lucide-react";
+import { Filter, ChevronDown, Loader2 } from "lucide-react";
 
 import trainer1 from "@/assets/trainer-1.jpg";
-import trainer2 from "@/assets/trainer-2.jpg";
-import trainer3 from "@/assets/trainer-3.jpg";
-import trainer4 from "@/assets/trainer-4.jpg";
+import { supabase } from "@/integrations/supabase/client";
 
-const trainers = [
-  {
-    id: 1,
-    name: "Lucas Mendes",
-    image: trainer1,
-    location: "São Paulo, SP - Zona Sul",
-    rating: 4.9,
-    reviews: 127,
-    specialties: ["Musculação", "Hipertrofia", "Emagrecimento"],
-    pricePerSession: 120,
-    verified: true,
-  },
-  {
-    id: 2,
-    name: "Camila Santos",
-    image: trainer2,
-    location: "São Paulo, SP - Centro",
-    rating: 4.8,
-    reviews: 89,
-    specialties: ["Funcional", "Pilates", "Yoga"],
-    pricePerSession: 100,
-    verified: true,
-  },
-  {
-    id: 3,
-    name: "Rafael Costa",
-    image: trainer3,
-    location: "Rio de Janeiro, RJ - Copacabana",
-    rating: 5.0,
-    reviews: 156,
-    specialties: ["CrossFit", "HIIT", "Condicionamento"],
-    pricePerSession: 150,
-    verified: true,
-  },
-  {
-    id: 4,
-    name: "Amanda Oliveira",
-    image: trainer4,
-    location: "Rio de Janeiro, RJ - Barra",
-    rating: 4.7,
-    reviews: 64,
-    specialties: ["Musculação", "Bodybuilding", "Nutrição"],
-    pricePerSession: 130,
-    verified: false,
-  },
-];
+// Trainers will be loaded from the database (profiles + user_roles)
+
 
 const cities = ["Todas", "São Paulo", "Rio de Janeiro", "Belo Horizonte", "Curitiba"];
 
@@ -61,9 +15,89 @@ const TrainersSection = () => {
   const [selectedCity, setSelectedCity] = useState("Todas");
   const [showFilters, setShowFilters] = useState(false);
 
-  const filteredTrainers = selectedCity === "Todas" 
-    ? trainers 
-    : trainers.filter(t => t.location.includes(selectedCity));
+  const [trainers, setTrainers] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const loadTrainers = async () => {
+      setLoading(true);
+      try {
+        // 1) get trainer user ids
+        const { data: rolesData, error: roleErr } = await supabase
+          .from("user_roles")
+          .select("user_id")
+          .eq("role", "trainer");
+
+        if (roleErr) {
+          console.error("Error fetching user_roles:", roleErr);
+          setTrainers([]);
+          return;
+        }
+
+        const userIds = (rolesData || []).map((r: any) => r.user_id);
+        if (userIds.length === 0) {
+          setTrainers([]);
+          return;
+        }
+
+        // 2) fetch profiles for those users
+        const { data: profiles, error: profilesErr } = await supabase
+          .from("profiles")
+          .select("id, full_name, avatar_url, location, specialties, price_per_session, cref")
+          .in("user_id", userIds);
+
+        if (profilesErr) {
+          console.error("Error fetching profiles:", profilesErr);
+          setTrainers([]);
+          return;
+        }
+
+        const profileIds = (profiles || []).map((p: any) => p.id);
+
+        // 3) fetch reviews to compute avg rating and count
+        const { data: reviews } = await supabase
+          .from("reviews")
+          .select("trainer_id, rating")
+          .in("trainer_id", profileIds);
+
+        const reviewsByTrainer: Record<string, number[]> = {};
+        (reviews || []).forEach((r: any) => {
+          if (!reviewsByTrainer[r.trainer_id]) reviewsByTrainer[r.trainer_id] = [];
+          reviewsByTrainer[r.trainer_id].push(r.rating);
+        });
+
+        const mapped = (profiles || []).map((p: any) => {
+          const trainerRatings = reviewsByTrainer[p.id] || [];
+          const avg = trainerRatings.length ? trainerRatings.reduce((a: number, b: number) => a + b, 0) / trainerRatings.length : 0;
+
+          return {
+            id: p.id,
+            name: p.full_name,
+            image: p.avatar_url || trainer1,
+            location: p.location || "",
+            rating: avg || 0,
+            reviews: trainerRatings.length || 0,
+            specialties: p.specialties || [],
+            pricePerSession: p.price_per_session || 0,
+            verified: !!p.cref,
+          };
+        });
+
+        setTrainers(mapped);
+      } catch (err) {
+        console.error("Unexpected error loading trainers:", err);
+        setTrainers([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadTrainers();
+  }, []);
+
+  const filteredTrainers = selectedCity === "Todas"
+    ? trainers
+    : trainers.filter((t) => t.location.includes(selectedCity));
 
   return (
     <section id="trainers" className="py-20 md:py-32 bg-background">
@@ -142,17 +176,25 @@ const TrainersSection = () => {
         )}
 
         {/* Trainers Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {filteredTrainers.map((trainer, index) => (
-            <div 
-              key={trainer.id} 
-              className="animate-fade-in"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              <TrainerCard {...trainer} />
-            </div>
-          ))}
-        </div>
+        {loading ? (
+          <div className="flex items-center justify-center py-24">
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
+          </div>
+        ) : filteredTrainers.length === 0 ? (
+          <div className="text-center py-24 text-muted-foreground">Nenhum trainer encontrado</div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {filteredTrainers.map((trainer, index) => (
+              <div 
+                key={trainer.id} 
+                className="animate-fade-in"
+                style={{ animationDelay: `${index * 0.1}s` }}
+              >
+                <TrainerCard {...trainer} />
+              </div>
+            ))}
+          </div>
+        )}
 
         {/* Load More */}
         <div className="text-center mt-12">

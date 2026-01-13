@@ -1,4 +1,4 @@
-,-- Create subscription_status enum
+-- Create subscription_status enum
 CREATE TYPE public.subscription_status AS ENUM ('active', 'past_due', 'cancelled', 'trialing');
 
 -- Create payment_status enum

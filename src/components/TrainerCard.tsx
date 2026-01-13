@@ -1,8 +1,10 @@
 import { Star, MapPin, Award } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 
 interface TrainerCardProps {
+  id: string;
   name: string;
   image: string;
   location: string;
@@ -14,6 +16,7 @@ interface TrainerCardProps {
 }
 
 const TrainerCard = ({
+  id,
   name,
   image,
   location,
@@ -23,9 +26,10 @@ const TrainerCard = ({
   pricePerSession,
   verified,
 }: TrainerCardProps) => {
+  const navigate = useNavigate();
+
   return (
-    <Card className="overflow-hidden group cursor-pointer">
-      {/* Image Container */}
+    <Card className="overflow-hidden group cursor-pointer">      {/* Image Container */}
       <div className="relative aspect-[4/5] overflow-hidden">
         <img
           src={image}
@@ -82,7 +86,7 @@ const TrainerCard = ({
         </div>
 
         {/* CTA Button */}
-        <Button variant="outline" className="w-full">
+        <Button variant="outline" className="w-full" onClick={() => navigate(`/trainer/${id}`)}>
           Ver Perfil
         </Button>
       </CardContent>

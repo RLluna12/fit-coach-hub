@@ -43,9 +43,7 @@ const Header = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-                <span className="text-muted-foreground text-sm">
-                  {userRole === "trainer" ? "Trainer" : "Aluno"}
-                </span>
+
                 {userRole === "trainer" && (
                   <Button variant="ghost" onClick={() => navigate("/trainer/profile")} className="gap-2">
                     <Dumbbell className="w-4 h-4" />
@@ -90,9 +88,6 @@ const Header = () => {
               <div className="flex flex-col gap-2 pt-4">
                 {user ? (
                   <>
-                    <span className="text-muted-foreground text-sm text-center">
-                      {userRole === "trainer" ? "Trainer" : "Aluno"}
-                    </span>
                     {userRole === "trainer" && (
                       <Button variant="ghost" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/trainer/profile'); }}>
                         <Dumbbell className="w-4 h-4" />
