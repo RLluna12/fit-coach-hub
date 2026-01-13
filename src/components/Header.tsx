@@ -21,9 +21,9 @@ const Header = () => {
           {/* Logo */}
           <div className="flex items-center gap-2">
             
-            <span className="font-display text-xl md:text-2xl font-bold tracking-tight">
+            <a href="#" onClick={(e) => { e.preventDefault(); window.scrollTo({ top: 0, behavior: 'smooth' }); window.history.replaceState({}, '', '/'); }} className="font-display text-xl md:text-2xl font-bold tracking-tight cursor-pointer">
               My<span className="text-gradient">Personal</span>Trainer
-            </span>
+            </a>
           </div>
 
           {/* Desktop Navigation */}
