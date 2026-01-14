@@ -2,6 +2,8 @@ import { Check, Zap, Video, Users, BarChart3 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useAuth } from "@/contexts/AuthContext";
+import { useToast } from "@/hooks/use-toast";
 
 const features = [
   { icon: Users, text: "Perfil profissional completo" },
@@ -12,6 +14,23 @@ const features = [
 
 const PricingSection = () => {
   const navigate = useNavigate();
+  const { user, userRole, loading } = useAuth();
+  const { toast } = useToast();
+
+  const handleStart = () => {
+    if (loading) return;
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    if (userRole === "trainer") {
+      navigate("/checkout");
+      return;
+    }
+
+    toast({ title: "Atenção", description: "É preciso ser Trainer para assinar. Atualize seu perfil ou cadastre-se como trainer." });
+    navigate("/auth");
+  };
 
   return (
     <section id="pricing" className="py-20 md:py-32 bg-background relative overflow-hidden">
@@ -77,7 +96,7 @@ const PricingSection = () => {
                 </li>
               </ul>
 
-              <Button variant="hero" size="xl" className="w-full" onClick={() => navigate('/checkout')}>
+              <Button variant="hero" size="xl" className="w-full" onClick={handleStart} disabled={loading}>
                 Começar Agora
               </Button>
               
