@@ -7,8 +7,8 @@ const Hero = () => {
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden">
       {/* Background Image */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
-        style={{ backgroundImage: `url(${heroBg})` }}
+        className="absolute inset-0 bg-cover bg-no-repeat"
+        style={{ backgroundImage: `url(${heroBg})`, backgroundPosition: 'center -1cm' }}
       />
       
       {/* Overlay */}
@@ -20,13 +20,12 @@ const Hero = () => {
       <div className="relative z-10 container mx-auto px-4 pt-20">
         <div className="max-w-4xl mx-auto text-center">
           <h1 className="font-display text-5xl md:text-7xl lg:text-8xl font-bold mb-6 animate-fade-in">
-            TRANSFORME SEU
-            <span className="block text-gradient">CORPO</span>
+            Encontre o personal trainer
+            <span className="block text-gradient">ideal perto de você</span>
           </h1>
           
           <p className="text-lg md:text-xl text-muted-foreground mb-8 max-w-2xl mx-auto animate-fade-in" style={{ animationDelay: "0.2s" }}>
-            Encontre os melhores personal trainers da sua região. 
-            Treinos personalizados, resultados reais.
+            Treinos personalizados, profissionais verificados e resultados reais
           </p>
 
           {/* Search Box */}
@@ -43,6 +42,19 @@ const Hero = () => {
               <Button variant="hero" size="xl" className="gap-2">
                 <Search className="w-5 h-5" />
                 Buscar
+              </Button>
+            </div>
+            
+            {/* Secondary CTA */}
+            <div className="mt-4 pt-4 border-t border-border/50">
+              <p className="text-sm text-muted-foreground mb-3">Você é personal trainer?</p>
+              <Button 
+                variant="outline" 
+                size="sm"
+                onClick={() => document.getElementById("pricing")?.scrollIntoView({ behavior: "smooth" })}
+                className="text-primary"
+              >
+                Quero ser trainer
               </Button>
             </div>
           </div>

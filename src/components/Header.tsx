@@ -35,7 +35,7 @@ const Header = () => {
               Como Funciona
             </a>
             <a href="#pricing" className="text-muted-foreground hover:text-foreground transition-colors">
-              Para Trainers
+              Seja um Trainer
             </a>
           </nav>
 
