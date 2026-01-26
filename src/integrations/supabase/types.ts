@@ -203,6 +203,45 @@ export type Database = {
         }
         Relationships: []
       }
+      lessons: {
+        Row: {
+          id: string
+          trainer_id: string
+          student_id: string | null
+          scheduled_date: string
+          start_time: string
+          end_time: string
+          status: Database["public"]["Enums"]["lesson_status"]
+          notes: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          trainer_id: string
+          student_id?: string | null
+          scheduled_date: string
+          start_time: string
+          end_time: string
+          status?: Database["public"]["Enums"]["lesson_status"]
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          trainer_id?: string
+          student_id?: string | null
+          scheduled_date?: string
+          start_time?: string
+          end_time?: string
+          status?: Database["public"]["Enums"]["lesson_status"]
+          notes?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -220,6 +259,7 @@ export type Database = {
       app_role: "student" | "trainer"
       subscription_status: "active" | "past_due" | "cancelled" | "trialing"
       payment_status: "succeeded" | "failed" | "pending"
+      lesson_status: "available" | "scheduled" | "completed" | "cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -350,6 +390,7 @@ export const Constants = {
       app_role: ["student", "trainer"],
       subscription_status: ["active", "past_due", "cancelled", "trialing"],
       payment_status: ["succeeded", "failed", "pending"],
+      lesson_status: ["available", "scheduled", "completed", "cancelled"],
     },
   },
 } as const

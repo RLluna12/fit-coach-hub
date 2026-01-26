@@ -8,6 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { ArrowLeft, Camera, Save, MapPin, Phone, DollarSign, Tag, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { TrainerScheduleManager } from "@/components/TrainerScheduleManager";
+import { ScheduledLessonsManager } from "@/components/ScheduledLessonsManager";
 
 interface ProfileData {
   full_name: string;
@@ -544,6 +546,20 @@ const TrainerProfile = () => {
             )}
             Salvar Alterações
           </Button>
+        </div>
+
+        {/* Lessons Management */}
+        <div className="mt-8 space-y-6">
+          <TrainerScheduleManager 
+            trainerId={user?.id || ""} 
+            onLessonAdded={() => {
+              // Refetch lessons if needed
+            }}
+          />
+          <ScheduledLessonsManager 
+            trainerId={user?.id || ""} 
+            isOwnProfile={true}
+          />
         </div>
       </div>
     </div>

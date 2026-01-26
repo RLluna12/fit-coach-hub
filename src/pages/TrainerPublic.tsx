@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2, Star, MapPin } from "lucide-react";
+import { AvailableLessonsGrid } from "@/components/AvailableLessonsGrid";
 
 const TrainerPublic = () => {
   const { id } = useParams();
@@ -71,7 +72,7 @@ const TrainerPublic = () => {
 
   return (
     <main className="min-h-screen bg-background py-16">
-      <div className="container mx-auto px-4 max-w-4xl">
+      <div className="container mx-auto px-4 max-w-6xl">
         <Card>
           <CardHeader className="flex items-center gap-6">
             <div className="w-28 h-28 rounded-full overflow-hidden bg-muted flex items-center justify-center">
@@ -103,8 +104,8 @@ const TrainerPublic = () => {
           </CardHeader>
 
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="md:col-span-2">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              <div className="lg:col-span-2">
                 <h3 className="text-lg font-semibold mb-2">Sobre</h3>
                 <p className="text-muted-foreground mb-4">{profile.bio || 'Sem descrição'}</p>
 
@@ -136,22 +137,31 @@ const TrainerPublic = () => {
                 )}
               </div>
 
-              <aside className="p-4 bg-card border border-border rounded-xl">
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold">Aulas</h4>
-                  <div className="text-xl font-display font-bold">R${profile.price_per_session || 0} <span className="text-sm text-muted-foreground font-normal">/aula</span></div>
-                </div>
+              <aside className="space-y-4">
+                <Card>
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-base">Informações</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <div>
+                      <h4 className="text-sm font-semibold">Valor da aula</h4>
+                      <div className="text-xl font-display font-bold">R${profile.price_per_session || 0} <span className="text-sm text-muted-foreground font-normal">/aula</span></div>
+                    </div>
 
-                <div className="mb-4">
-                  <h4 className="text-sm font-semibold">Contato</h4>
-                  <div className="text-sm text-muted-foreground">{profile.phone || '—'}</div>
-                </div>
-
-                <Button className="w-full" onClick={() => alert('Funcionalidade de agendamento não implementada')}>Agendar Aula</Button>
+                    <div>
+                      <h4 className="text-sm font-semibold">Contato</h4>
+                      <div className="text-sm text-muted-foreground">{profile.phone || '—'}</div>
+                    </div>
+                  </CardContent>
+                </Card>
               </aside>
             </div>
           </CardContent>
         </Card>
+
+        <div className="mt-8">
+          <AvailableLessonsGrid trainerId={profile.id} isOwnProfile={false} />
+        </div>
       </div>
     </main>
   );
