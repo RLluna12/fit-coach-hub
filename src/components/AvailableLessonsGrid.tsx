@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Calendar, Clock, CheckCircle2, Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { format, parseISO, addDays, startOfDay, isAfter } from "date-fns";
+import { format, parseISO, addDays, startOfDay, isAfter, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 
 interface Lesson {
@@ -56,7 +56,18 @@ export const AvailableLessonsGrid = ({
         .order("start_time", { ascending: true });
 
       if (error) throw error;
-      setLessons(data || []);
+      
+      // Filtrar apenas aulas futuras (data + hora)
+      const now = new Date();
+      const filteredLessons = (data || []).filter((lesson) => {
+        const lessonDateTime = parse(
+          `${lesson.scheduled_date} ${lesson.start_time}`,
+          "yyyy-MM-dd HH:mm:ss",
+          new Date()
+        );
+        return isAfter(lessonDateTime, now);
+      });
+      setLessons(filteredLessons);
     } catch (error) {
       console.error("Error fetching lessons:", error);
       toast({
@@ -83,6 +94,12 @@ export const AvailableLessonsGrid = ({
         return;
       }
 
+      // Get lesson details to get trainer_id
+      const lessonToBook = lessons.find((l) => l.id === lessonId);
+      if (!lessonToBook) {
+        throw new Error("Aula não encontrada");
+      }
+
       const { error } = await supabase
         .from("lessons")
         .update({
@@ -93,6 +110,19 @@ export const AvailableLessonsGrid = ({
         .eq("status", "available");
 
       if (error) throw error;
+
+      // Call edge function to send email
+      try {
+        await supabase.functions.invoke("send-lesson-email", {
+          body: {
+            lessonId,
+            studentId: sessionData.session.user.id,
+            trainerId: lessonToBook.trainer_id,
+          },
+        });
+      } catch (emailErr) {
+        console.warn("Email send failed but lesson was booked:", emailErr);
+      }
 
       toast({
         title: "Aula agendada com sucesso!",

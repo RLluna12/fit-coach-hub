@@ -9,6 +9,8 @@ import Auth from "./pages/Auth";
 import TrainerProfile from "./pages/TrainerProfile";
 import TrainerPublic from "./pages/TrainerPublic";
 import Checkout from "./pages/Checkout";
+import StudentProfile from "./pages/StudentProfile";
+import StudentBooking from "./pages/StudentBooking";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -25,6 +27,8 @@ const App = () => (
             <Route path="/auth" element={<Auth />} />
             <Route path="/trainer/profile" element={<TrainerProfile />} />
             <Route path="/trainer/:id" element={<TrainerPublic />} />
+            <Route path="/student/profile" element={<StudentProfile />} />
+            <Route path="/agendar" element={<StudentBooking />} />
             <Route path="/checkout" element={<Checkout />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

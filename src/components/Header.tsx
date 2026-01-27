@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Menu, X, Dumbbell, LogOut } from "lucide-react";
+import { Menu, X, Dumbbell, LogOut, Calendar } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Header = () => {
@@ -43,7 +43,11 @@ const Header = () => {
           <div className="hidden md:flex items-center gap-4">
             {user ? (
               <>
-
+                {userRole === "student" && (
+                  <Button variant="outline" onClick={() => navigate("/student/profile")} className="gap-2">
+                    Perfil
+                  </Button>
+                )}
                 {userRole === "trainer" && (
                   <Button variant="ghost" onClick={() => navigate("/trainer/profile")} className="gap-2">
                     <Dumbbell className="w-4 h-4" />
@@ -88,6 +92,11 @@ const Header = () => {
               <div className="flex flex-col gap-2 pt-4">
                 {user ? (
                   <>
+                    {userRole === "student" && (
+                      <Button variant="outline" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/student/profile'); }}>
+                        Perfil
+                      </Button>
+                    )}
                     {userRole === "trainer" && (
                       <Button variant="ghost" className="w-full" onClick={() => { setIsMenuOpen(false); navigate('/trainer/profile'); }}>
                         <Dumbbell className="w-4 h-4" />

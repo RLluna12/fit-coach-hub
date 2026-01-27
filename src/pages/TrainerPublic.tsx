@@ -98,9 +98,7 @@ const TrainerPublic = () => {
                 )}
               </div>
             </div>
-            <div className="ml-auto">
-              <Button onClick={() => navigate(`/trainer/profile`)}>Sou o trainer</Button>
-            </div>
+           
           </CardHeader>
 
           <CardContent>
@@ -159,9 +157,14 @@ const TrainerPublic = () => {
           </CardContent>
         </Card>
 
-        <div className="mt-8">
-          <AvailableLessonsGrid trainerId={profile.id} isOwnProfile={false} />
-        </div>
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="text-2xl">Agendar Aula</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <AvailableLessonsGrid trainerId={profile.user_id} isOwnProfile={false} />
+          </CardContent>
+        </Card>
       </div>
     </main>
   );
